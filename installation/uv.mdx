@@ -1,0 +1,52 @@
+---
+title: "Install bunker-fold with uv"
+sidebarTitle: "uv"
+description: "Install the bunker-fold Python SDK with uv. Fast, resolver-first workflow for new projects, with lockfile support and one-command environment setup."
+---
+
+`uv` is a fast Python package manager and resolver. Use it when you want a lockfile, deterministic installs, and quick environment setup.
+
+## Add to a project
+
+From an existing `uv`-managed project:
+
+```bash
+uv add bunker-fold
+```
+
+This updates `pyproject.toml` and refreshes `uv.lock`.
+
+## Install without a project
+
+Install into the active environment without touching a lockfile:
+
+```bash
+uv pip install bunker-fold
+```
+
+## Bootstrap a new project
+
+```bash
+uv init my-bunker-app
+cd my-bunker-app
+uv add bunker-fold
+uv run python -c "import bunker_fold; print(bunker_fold.__version__)"
+```
+
+## Pin a version
+
+```bash
+uv add "bunker-fold==1.4.2"
+```
+
+## Upgrade
+
+```bash
+uv sync --upgrade-package bunker-fold
+```
+
+## Verify
+
+```bash
+uv run python -c "import bunker_fold; print(bunker_fold.__version__)"
+```

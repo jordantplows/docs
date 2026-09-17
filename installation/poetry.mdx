@@ -1,0 +1,57 @@
+---
+title: "Install bunker-fold with Poetry"
+sidebarTitle: "Poetry"
+description: "Install the bunker-fold Python SDK with Poetry. Covers adding the dependency, locking, virtualenvs, version pinning, and upgrading in a Poetry project."
+---
+
+Use Poetry when you want lockfile-driven dependency management with a single `pyproject.toml` as the source of truth.
+
+## Add to a project
+
+```bash
+poetry add bunker-fold
+```
+
+This updates `pyproject.toml` and writes `poetry.lock`.
+
+## Bootstrap a new project
+
+```bash
+poetry new my-bunker-app
+cd my-bunker-app
+poetry add bunker-fold
+poetry run python -c "import bunker_fold; print(bunker_fold.__version__)"
+```
+
+## Pin a version
+
+```bash
+poetry add "bunker-fold==1.4.2"
+```
+
+Or edit `pyproject.toml` directly:
+
+```toml
+[tool.poetry.dependencies]
+python = "^3.9"
+bunker-fold = "1.4.2"
+```
+
+Then run:
+
+```bash
+poetry lock
+poetry install
+```
+
+## Upgrade
+
+```bash
+poetry update bunker-fold
+```
+
+## Verify
+
+```bash
+poetry run python -c "import bunker_fold; print(bunker_fold.__version__)"
+```

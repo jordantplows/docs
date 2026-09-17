@@ -15,7 +15,6 @@
         "icon": "rocket",
         "pages": [
           "index",
-          "installation",
           "quickstart",
           "authentication"
         ]
@@ -43,7 +42,17 @@
           "api-reference/errors"
         ]
       },
-      "installation"
+      {
+        "group": "Installation",
+        "icon": "download",
+        "pages": [
+          "installation/overview",
+          "installation/pip",
+          "installation/uv",
+          "installation/poetry",
+          "installation/docker"
+        ]
+      }
     ]
   },
   "contextual": {

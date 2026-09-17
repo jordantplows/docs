@@ -1,0 +1,57 @@
+---
+title: "Run bunker-fold in Docker"
+sidebarTitle: "Docker"
+description: "Use the official Bunker Longevity Docker image. Pre-built with bunker-fold, CUDA runtime, and Python 3.11 for GPU-backed local development and CI."
+---
+
+The official Bunker Longevity Docker image ships with `bunker-fold`, a CUDA runtime, and Python 3.11 pre-installed. Use it for GPU-backed local development, reproducible CI, or as a base for your own containers.
+
+## Pull the image
+
+```bash
+docker pull ghcr.io/bunker-longevity/bunker-fold:latest
+```
+
+## Run a prediction
+
+```bash
+docker run --rm --gpus all \
+  -e BUNKER_API_KEY \
+  ghcr.io/bunker-longevity/bunker-fold:latest \
+  python -c "from bunker_fold import Bunker; \
+             print(Bunker().models.bunkerfold_3.predict(sequence='MVLSPADK').confidence)"
+```
+
+## Interactive shell
+
+```bash
+docker run --rm -it --gpus all \
+  -e BUNKER_API_KEY \
+  ghcr.io/bunker-longevity/bunker-fold:latest \
+  bash
+```
+
+## Build on top of the image
+
+```dockerfile
+FROM ghcr.io/bunker-longevity/bunker-fold:latest
+
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+
+CMD ["python", "run.py"]
+```
+
+## Pin a version
+
+```bash
+docker pull ghcr.io/bunker-longevity/bunker-fold:1.4.2
+```
+
+## Verify
+
+```bash
+docker run --rm ghcr.io/bunker-longevity/bunker-fold:latest \
+  python -c "import bunker_fold; print(bunker_fold.__version__)"
+```

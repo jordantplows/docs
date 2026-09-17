@@ -1,0 +1,56 @@
+---
+title: "Install bunker-fold with pip"
+sidebarTitle: "pip"
+description: "Install the bunker-fold Python SDK with pip. Covers the install command, virtual environments, upgrades, and pinning to a specific release."
+---
+
+Use `pip` for the standard Python install path. Works on macOS, Linux, and Windows with Python 3.9 or later.
+
+## Install
+
+```bash
+pip install bunker-fold
+```
+
+## Install in a virtual environment
+
+Isolate the SDK from your system Python:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install bunker-fold
+```
+
+## Pin a version
+
+Lock to a specific release for reproducible builds:
+
+```bash
+pip install "bunker-fold==1.4.2"
+```
+
+Or add it to `requirements.txt`:
+
+```
+bunker-fold==1.4.2
+```
+
+## Upgrade
+
+```bash
+pip install --upgrade bunker-fold
+```
+
+## Uninstall
+
+```bash
+pip uninstall bunker-fold
+```
+
+## Verify
+
+```python
+import bunker_fold
+print(bunker_fold.__version__)
+```
