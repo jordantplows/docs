@@ -12,7 +12,6 @@
     "pages": [
       {
         "group": "Get Started",
-        "icon": "rocket",
         "pages": [
           "index",
           "quickstart",
@@ -21,7 +20,6 @@
       },
       {
         "group": "Models",
-        "icon": "brain",
         "pages": [
           "models/overview",
           "models/bunkerfold-3",
@@ -44,7 +42,6 @@
       },
       {
         "group": "Installation",
-        "icon": "download",
         "pages": [
           "installation/overview",
           "installation/pip",
