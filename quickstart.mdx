@@ -7,6 +7,15 @@ description: "Deploy a Bunker model, authenticate, and run your first inference 
 Get your first prediction from a Bunker Longevity model in under five minutes. This guide uses BunkerFold-3 for protein structure prediction, but the same flow works for every model in the catalog.
 
 <Steps>
+  <Step title="Install the SDK">
+    Install the `bunker-fold` Python package, which ships a typed client for every Bunker Longevity model.
+
+    ```bash
+    pip install bunker-fold
+    ```
+
+    See [Installation](/installation) for `uv` and `poetry` alternatives.
+  </Step>
   <Step title="Get an API key">
     Sign in at [bunkerbio.com](https://bunkerbio.com) and generate a key from your Bunker Longevity account settings. Treat it like a password.
 

@@ -9,12 +9,13 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "groups": [
+    "pages": [
       {
         "group": "Get Started",
         "icon": "rocket",
         "pages": [
           "index",
+          "installation",
           "quickstart",
           "authentication"
         ]
@@ -41,7 +42,8 @@
           "api-reference/inference",
           "api-reference/errors"
         ]
-      }
+      },
+      "installation"
     ]
   },
   "contextual": {

@@ -1,0 +1,91 @@
+---
+title: "Install the bunker-fold Python Package"
+sidebarTitle: "Installation"
+description: "Install bunker-fold, the official Python SDK for every Bunker Longevity model. Covers pip install, verification, environment setup, and upgrades."
+---
+
+`bunker-fold` is the official Python SDK for Bunker Longevity. A single package gives you a typed client for every model in the [catalog](/models/overview), including BunkerFold-3, GenoScan-LLM, MolGen-7, CryoNet, ToxPredict-v2, and EpiMark.
+
+## Requirements
+
+- Python 3.9 or later
+- A Bunker Longevity API key ([Authentication](/authentication))
+
+## Install
+
+<CodeGroup>
+```bash pip
+pip install bunker-fold
+```
+
+```bash uv
+uv add bunker-fold
+```
+
+```bash poetry
+poetry add bunker-fold
+```
+</CodeGroup>
+
+## Verify
+
+Confirm the package is installed and reachable:
+
+```python
+import bunker_fold
+print(bunker_fold.__version__)
+```
+
+## Configure your API key
+
+Export your key as an environment variable so the SDK picks it up automatically:
+
+```bash
+export BUNKER_API_KEY="sk_live_..."
+```
+
+Or pass it explicitly when constructing the client:
+
+```python
+from bunker_fold import Bunker
+
+client = Bunker(api_key="sk_live_...")
+```
+
+<Note>
+Never commit API keys to source control. See [Authentication](/authentication) for rotation and scope guidance.
+</Note>
+
+## First call
+
+Run a prediction against BunkerFold-3 to confirm end-to-end connectivity:
+
+```python
+from bunker_fold import Bunker
+
+client = Bunker()
+
+result = client.models.bunkerfold_3.predict(
+    sequence="MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+)
+print(result.confidence, result.structure_url)
+```
+
+## Upgrade
+
+```bash
+pip install --upgrade bunker-fold
+```
+
+Check the installed version against the latest release before opening a support ticket.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Deploy a model and run your first prediction.
+  </Card>
+  <Card title="Browse models" icon="brain" href="/models/overview">
+    See what every model in the catalog does.
+  </Card>
+</CardGroup>
