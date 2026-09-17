@@ -74,5 +74,9 @@
   },
   "styling": {
     "eyebrows": "breadcrumbs"
+  },
+  "appearance": {
+    "default": "light",
+    "strict": true
   }
 }
