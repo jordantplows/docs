@@ -1,0 +1,67 @@
+---
+title: "Bunker API: Deploy Models and Run Inference"
+sidebarTitle: "Introduction"
+description: "The Bunker API exposes every model through a uniform surface: deploy an instance, run inference, and check status. All requests use bearer token auth over HTTPS."
+---
+
+The Bunker API exposes every model through a uniform REST surface. You deploy an instance, send a prediction request, and receive JSON back. The same three endpoints work for every model in the [catalog](/models/overview).
+
+## Base URL
+
+```text
+https://api.bunkerbio.com/v1
+```
+
+All requests must use HTTPS. HTTP requests are rejected.
+
+## Authentication
+
+Every request must include a bearer token in the `Authorization` header.
+
+```bash
+curl https://api.bunkerbio.com/v1/models \
+  -H "Authorization: Bearer $BUNKER_API_KEY"
+```
+
+See [Authentication](/authentication) for how to generate keys, choose scopes, and rotate credentials.
+
+## Endpoints
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/v1/models` | List all available models |
+| `POST` | `/v1/models/{model}/deploy` | Start an inference instance for a model |
+| `POST` | `/v1/models/{model}/predict` | Run a prediction on a deployed model |
+| `GET` | `/v1/models/{model}/status` | Report deployment health and queue depth |
+| `POST` | `/v1/models/{model}/stop` | Stop a running instance and release resources |
+
+See [Deploy a model](/api-reference/deploy) and [Run inference](/api-reference/inference) for full request and response schemas.
+
+## Content type
+
+All request bodies must be JSON with `Content-Type: application/json`. Responses are always JSON, including error responses.
+
+## Rate limits
+
+Rate limits are applied per API key. You can inspect current usage in the response headers of any successful call:
+
+| Header | Meaning |
+| --- | --- |
+| `X-RateLimit-Limit` | Requests allowed per minute |
+| `X-RateLimit-Remaining` | Requests remaining in the current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window resets |
+
+When you exceed the limit, the API returns `429 Too Many Requests`. Retry with exponential backoff.
+
+## Errors
+
+Errors return a JSON body with a `code` and `message`. See [Errors](/api-reference/errors) for the full list of error codes.
+
+```json
+{
+  "error": {
+    "code": "invalid_sequence",
+    "message": "Sequence contains characters outside the IUPAC amino acid set"
+  }
+}
+```

@@ -1,0 +1,96 @@
+---
+title: "BunkerFold-3: Protein Structure Prediction from Sequence"
+sidebarTitle: "BunkerFold-3"
+description: "BunkerFold-3 predicts 3D protein structure from an amino acid sequence with sub-angstrom accuracy on CASP15 targets and full side-chain resolution."
+---
+
+BunkerFold-3 is a 1.2B parameter protein structure prediction model. Given an amino acid sequence, it returns full 3D atomic coordinates with side chains, per-residue confidence scores, and a predicted fold class.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Protein |
+| Parameters | 1.2B |
+| Version | v3.1 |
+| Endpoint | `POST /v1/models/bunkerfold-3/predict` |
+| Typical latency | ~2 seconds for sequences under 150 residues |
+
+## When to use
+
+- Predict structure for a novel sequence with no known homolog.
+- Resolve side-chain conformations for docking studies.
+- Screen designs from a protein engineering pipeline before wet-lab validation.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/bunkerfold-3/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={"sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"},
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "confidence": 0.97,
+  "rmsd": 0.42,
+  "residues_resolved": "51/51",
+  "fold_class": "globin",
+  "time_seconds": 1.8,
+  "structure_url": "https://cdn.bunkerbio.com/predictions/abc123.pdb"
+}
+```
+
+## Parameters
+
+<ParamField path="sequence" type="string" required>
+  Amino acid sequence in single-letter IUPAC codes. Maximum length 2,048 residues.
+</ParamField>
+
+<ParamField path="options.return_side_chains" default="true" type="boolean">
+  Include side-chain atoms in the returned structure.
+</ParamField>
+
+<ParamField path="options.templates" type="string[]">
+  Optional list of PDB IDs to use as templates. Leave empty for template-free prediction.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="confidence" type="number">
+  Model-wide confidence score between 0 and 1.
+</ResponseField>
+
+<ResponseField name="rmsd" type="number">
+  Estimated RMSD in angstroms against the predicted best template.
+</ResponseField>
+
+<ResponseField name="residues_resolved" type="string">
+  Fraction of residues resolved at atomic detail, formatted as `resolved/total`.
+</ResponseField>
+
+<ResponseField name="fold_class" type="string">
+  Predicted structural class (for example, `globin`, `immunoglobulin`, `tim_barrel`).
+</ResponseField>
+
+<ResponseField name="structure_url" type="string">
+  Signed URL to a PDB file with the full predicted structure. Valid for 24 hours.
+</ResponseField>

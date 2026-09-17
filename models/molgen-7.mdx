@@ -1,0 +1,135 @@
+---
+title: "MolGen-7: Generative Small Molecule Design"
+sidebarTitle: "MolGen-7"
+description: "MolGen-7 generates novel small molecules optimized for binding affinity, ADMET properties, and synthetic accessibility against a specified biological target."
+---
+
+MolGen-7 is a 3.4B parameter generative model for small molecule design. Given a target and property constraints, it proposes novel candidate molecules with predicted binding affinity, ADMET scores, and synthetic accessibility.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Drug Discovery |
+| Parameters | 3.4B |
+| Version | v7.0 |
+| Endpoint | `POST /v1/models/molgen-7/predict` |
+| Output | SMILES strings with predicted affinity and property scores |
+
+## When to use
+
+- Generate hit candidates against a validated target.
+- Optimize a known scaffold for logP, molecular weight, or synthetic accessibility.
+- Expand a chemical library with diverse, novel structures.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/molgen-7/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target": "EGFR T790M",
+    "objective": "binding_affinity",
+    "constraints": {
+      "logP": {"max": 5},
+      "mol_weight": {"max": 500},
+      "synthetic_steps": {"max": 6}
+    },
+    "num_candidates": 4
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/molgen-7/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={
+        "target": "EGFR T790M",
+        "objective": "binding_affinity",
+        "constraints": {
+            "logP": {"max": 5},
+            "mol_weight": {"max": 500},
+            "synthetic_steps": {"max": 6},
+        },
+        "num_candidates": 4,
+    },
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "candidates_generated": 4,
+  "candidates": [
+    {
+      "id": "BNK-4821",
+      "smiles": "CC1=CC(=C...)",
+      "affinity_nM": 2.1,
+      "synthetic_accessibility": 3.2,
+      "logP": 3.8,
+      "tox_clear": true
+    }
+  ]
+}
+```
+
+## Parameters
+
+<ParamField path="target" type="string" required>
+  Target identifier, either a gene symbol with mutation (`EGFR T790M`) or a UniProt ID.
+</ParamField>
+
+<ParamField path="objective" type="string" required>
+  Optimization objective. One of `binding_affinity`, `selectivity`, `admet`, or `multi`.
+</ParamField>
+
+<ParamField path="constraints" type="object">
+  Property constraints applied during generation. Each key accepts `min` and `max` bounds.
+</ParamField>
+
+<ParamField path="num_candidates" default="4" type="integer">
+  Number of candidate molecules to return. Maximum 32.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="candidates_generated" type="integer">
+  Number of candidates that passed all constraints.
+</ResponseField>
+
+<ResponseField name="candidates" type="array">
+  Ranked candidate molecules.
+
+  <Expandable title="candidate fields">
+    <ResponseField name="id" type="string">
+      Bunker-assigned candidate ID.
+    </ResponseField>
+
+    <ResponseField name="smiles" type="string">
+      SMILES representation of the molecule.
+    </ResponseField>
+
+    <ResponseField name="affinity_nM" type="number">
+      Predicted binding affinity in nanomolar.
+    </ResponseField>
+
+    <ResponseField name="synthetic_accessibility" type="number">
+      SA score from 1 (easy) to 10 (hard) to synthesize.
+    </ResponseField>
+
+    <ResponseField name="tox_clear" type="boolean">
+      Whether the candidate clears a fast ToxPredict-v2 pre-screen.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<Tip>
+  Pipe candidates through [ToxPredict-v2](/models/toxpredict-v2) for a full toxicity profile before committing to synthesis.
+</Tip>

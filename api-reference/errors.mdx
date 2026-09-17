@@ -1,0 +1,59 @@
+---
+title: "Bunker API Errors: Codes, Meanings, and Fixes"
+sidebarTitle: "Errors"
+description: "Reference for every error the Bunker API can return. Each entry includes the HTTP status, error code, meaning, and the recommended way to recover."
+---
+
+The Bunker API returns errors as JSON with a stable `code` you can switch on and a human-readable `message`. HTTP status codes follow standard REST conventions.
+
+## Error shape
+
+```json
+{
+  "error": {
+    "code": "invalid_sequence",
+    "message": "Sequence contains characters outside the IUPAC amino acid set",
+    "request_id": "req_9e12ab"
+  }
+}
+```
+
+## HTTP status codes
+
+| Status | Meaning |
+| --- | --- |
+| `400 Bad Request` | Request body is malformed or fails validation |
+| `401 Unauthorized` | Missing or invalid API key |
+| `403 Forbidden` | Key does not have the required scope |
+| `404 Not Found` | Model, deployment, or job does not exist |
+| `409 Conflict` | Deployment is not in a state that allows the requested operation |
+| `429 Too Many Requests` | Rate limit exceeded |
+| `500 Internal Server Error` | Unexpected server error; safe to retry |
+| `503 Service Unavailable` | Capacity temporarily exhausted; retry with backoff |
+
+## Error codes
+
+| Code | Status | When it happens | How to fix |
+| --- | --- | --- | --- |
+| `invalid_api_key` | 401 | Key is missing, malformed, or revoked | Check the `Authorization` header and rotate if needed |
+| `insufficient_scope` | 403 | Key lacks the required scope | Use a key with `inference` or `deploy` scope |
+| `model_not_found` | 404 | Unknown model name in the URL | Check the [model catalog](/models/overview) for valid names |
+| `deployment_not_ready` | 409 | Sent a predict request before deployment reached `ready` | Poll `/status` until the deployment is ready |
+| `invalid_sequence` | 400 | Amino acid input contains unsupported characters | Restrict to the 20 standard IUPAC codes |
+| `sequence_too_long` | 400 | Input exceeds the model's maximum length | Split into smaller windows or use a different model |
+| `invalid_smiles` | 400 | SMILES string does not parse | Validate SMILES locally with RDKit before sending |
+| `constraint_infeasible` | 400 | MolGen-7 constraints admit no valid molecule | Loosen constraints and try again |
+| `rate_limit_exceeded` | 429 | Too many requests in the current window | Back off and retry after `X-RateLimit-Reset` |
+| `quota_exceeded` | 429 | Monthly quota exhausted | Upgrade your plan or wait for the quota to reset |
+| `capacity_exhausted` | 503 | No GPU capacity available for the requested instance type | Retry with backoff or pick a different `instance_type` |
+| `internal_error` | 500 | Unexpected server error | Retry with backoff; contact support if it persists |
+
+## Retry guidance
+
+<Warning>
+  Do not retry `400`-series errors without changing the request. They are deterministic and will fail again.
+</Warning>
+
+- Retry `429`, `500`, and `503` with exponential backoff and jitter.
+- Include a stable `request_id` on retries so support can trace them.
+- Reach out at [hello@bunkerbio.com](mailto:hello@bunkerbio.com) with the `request_id` for any error you cannot resolve.

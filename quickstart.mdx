@@ -1,47 +1,86 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Quickstart: Run Your First Bunker Model"
+sidebarTitle: "Quickstart"
+description: "Deploy a Bunker model, authenticate, and run your first inference request in five minutes. Works with any language that speaks HTTP."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+Get your first prediction from a Bunker model in under five minutes. This guide uses BunkerFold-3 for protein structure prediction, but the same flow works for every model in the catalog.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Get an API key">
+    Sign in at [bunkerbio.com](https://bunkerbio.com) and generate a key from your account settings. Treat it like a password.
 
-    ```bash
-    npm install your-package
-    ```
+    See [Authentication](/authentication) for full details on scopes and rotation.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+  <Step title="Deploy the model">
+    Deploy a model instance so it is ready to accept inference requests.
 
-    ```bash
-    your-cli init
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/deploy \
+      -H "Authorization: Bearer $BUNKER_API_KEY"
     ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
+    ```python Python
+    import requests, os
+    
+    r = requests.post(
+        "https://api.bunkerbio.com/v1/models/bunkerfold-3/deploy",
+        headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    )
+    print(r.json())
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="Run inference">
+    Send an amino acid sequence and get a predicted 3D structure back.
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/predict \
+      -H "Authorization: Bearer $BUNKER_API_KEY" \
+      -H "Content-Type: application/json" \
+      -d '{"sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"}'
+    ```
+
+    ```python Python
+    r = requests.post(
+        "https://api.bunkerbio.com/v1/models/bunkerfold-3/predict",
+        headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+        json={"sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"},
+    )
+    print(r.json())
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="Inspect the response">
+    You get back a confidence score, per-residue coordinates, and timing.
+
+    ```json Response
+    {
+      "confidence": 0.97,
+      "rmsd": 0.42,
+      "residues_resolved": "51/51",
+      "fold_class": "globin",
+      "time_seconds": 1.8,
+      "structure_url": "https://cdn.bunkerbio.com/predictions/abc123.pdb"
+    }
     ```
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Next steps
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Browse all models" icon="brain" href="/models/overview">
+    Compare all six Bunker models and pick the one for your task.
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Full request and response schemas for every endpoint.
+  </Card>
+</CardGroup>

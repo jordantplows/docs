@@ -1,0 +1,102 @@
+---
+title: "Deploy a Bunker Model Instance"
+sidebarTitle: "Deploy a Model"
+description: "Start a Bunker model instance so it accepts inference requests. Covers the deploy endpoint, instance types, status polling, and how to stop an instance."
+---
+
+Before you can send prediction requests to a Bunker model, you deploy an instance. Deploying reserves compute for your account and returns a deployment ID you can poll for readiness.
+
+## Deploy an instance
+
+```http
+POST /v1/models/{model}/deploy
+```
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/deploy \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"instance_type": "gpu.a100", "replicas": 1}'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/bunkerfold-3/deploy",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={"instance_type": "gpu.a100", "replicas": 1},
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "deployment_id": "dep_7f3a2c",
+  "model": "bunkerfold-3",
+  "status": "provisioning",
+  "instance_type": "gpu.a100",
+  "replicas": 1
+}
+```
+
+## Parameters
+
+<ParamField path="instance_type" default="gpu.a100" type="string">
+  Instance class. One of `gpu.t4`, `gpu.a10`, `gpu.a100`, `gpu.h100`.
+</ParamField>
+
+<ParamField path="replicas" default="1" type="integer">
+  Number of replicas to deploy. Traffic is load-balanced across replicas.
+</ParamField>
+
+<ParamField path="auto_stop_minutes" default="30" type="integer">
+  Automatically stop the instance after this many minutes of inactivity. Set `0` to disable.
+</ParamField>
+
+## Check deployment status
+
+```http
+GET /v1/models/{model}/status
+```
+
+Poll status until it reports `ready` before sending prediction requests.
+
+```bash
+curl https://api.bunkerbio.com/v1/models/bunkerfold-3/status \
+  -H "Authorization: Bearer $BUNKER_API_KEY"
+```
+
+```json Response
+{
+  "deployment_id": "dep_7f3a2c",
+  "status": "ready",
+  "replicas_ready": 1,
+  "queue_depth": 0
+}
+```
+
+<ResponseField name="status" type="string">
+  Deployment status. One of `provisioning`, `warming`, `ready`, `degraded`, `stopped`.
+</ResponseField>
+
+<ResponseField name="queue_depth" type="integer">
+  Number of prediction requests currently waiting in the queue.
+</ResponseField>
+
+## Stop an instance
+
+Release compute when you are done:
+
+```bash
+curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/stop \
+  -H "Authorization: Bearer $BUNKER_API_KEY"
+```
+
+<Note>
+  Instances are billed per second while they are in `provisioning`, `warming`, or `ready` states.
+</Note>

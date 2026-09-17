@@ -1,0 +1,130 @@
+---
+title: "GenoScan-LLM: Whole-Genome Variant Calling"
+sidebarTitle: "GenoScan-LLM"
+description: "GenoScan-LLM is a foundation model for whole-genome variant calling. Trained on 200K+ genomes, it flags pathogenic variants at clinical-grade sensitivity."
+---
+
+GenoScan-LLM is an 800M parameter foundation model for variant calling. Given aligned reads or a target region, it identifies SNVs, small indels, and structural variants, then classifies them by pathogenicity with clinical-grade sensitivity.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Genomics |
+| Parameters | 800M |
+| Version | v2.0 |
+| Endpoint | `POST /v1/models/genoscan-llm/predict` |
+| Training data | 200,000+ genomes across ancestry-balanced cohorts |
+
+## When to use
+
+- Call variants from whole-genome or targeted panel data.
+- Flag pathogenic variants in a clinical reporting workflow.
+- Reprioritize a VCF against updated pathogenicity evidence.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/genoscan-llm/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "region": "chr17:41244000-41277500",
+    "gene": "BRCA1",
+    "coverage": 42,
+    "format": "CRAM",
+    "input_url": "s3://my-bucket/sample.cram"
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/genoscan-llm/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={
+        "region": "chr17:41244000-41277500",
+        "gene": "BRCA1",
+        "coverage": 42,
+        "format": "CRAM",
+        "input_url": "s3://my-bucket/sample.cram",
+    },
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "variants_detected": 3,
+  "variants": [
+    {
+      "id": "rs80357906",
+      "hgvs": "c.5266dupC",
+      "classification": "pathogenic",
+      "acmg_class": 5,
+      "confidence": 0.994
+    },
+    { "id": "rs1799966", "classification": "benign" },
+    { "id": "rs16942", "classification": "benign" }
+  ]
+}
+```
+
+## Parameters
+
+<ParamField path="region" type="string" required>
+  Genomic region in `chrN:start-end` format.
+</ParamField>
+
+<ParamField path="input_url" type="string" required>
+  Signed URL or S3 path to a BAM, CRAM, or VCF file.
+</ParamField>
+
+<ParamField path="format" type="string" required>
+  One of `BAM`, `CRAM`, or `VCF`.
+</ParamField>
+
+<ParamField path="gene" type="string">
+  Optional gene symbol used to prioritize functional annotation.
+</ParamField>
+
+<ParamField path="coverage" type="number">
+  Average coverage depth. Used to calibrate confidence thresholds.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="variants_detected" type="integer">
+  Total number of variants called in the region.
+</ResponseField>
+
+<ResponseField name="variants" type="array">
+  List of variants with identifier, HGVS notation, and pathogenicity classification.
+
+  <Expandable title="variant fields">
+    <ResponseField name="id" type="string">
+      dbSNP identifier where available.
+    </ResponseField>
+
+    <ResponseField name="hgvs" type="string">
+      HGVS coding notation.
+    </ResponseField>
+
+    <ResponseField name="classification" type="string">
+      One of `pathogenic`, `likely_pathogenic`, `uncertain`, `likely_benign`, `benign`.
+    </ResponseField>
+
+    <ResponseField name="acmg_class" type="integer">
+      ACMG classification from 1 (benign) to 5 (pathogenic).
+    </ResponseField>
+
+    <ResponseField name="confidence" type="number">
+      Model confidence in the classification, between 0 and 1.
+    </ResponseField>
+  </Expandable>
+</ResponseField>

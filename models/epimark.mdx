@@ -1,0 +1,97 @@
+---
+title: "EpiMark: Epigenomic Annotation from Sequence"
+sidebarTitle: "EpiMark"
+description: "EpiMark predicts histone modifications, methylation state, and chromatin accessibility from sequence context alone, with no experimental epigenomic input needed."
+---
+
+EpiMark is a 420M parameter epigenomic annotation model. Given a genomic region and cell type, it predicts histone marks, CpG methylation, and chromatin accessibility from sequence context alone. No ChIP-seq or ATAC-seq data required.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Genomics |
+| Parameters | 420M |
+| Version | v1.1 |
+| Endpoint | `POST /v1/models/epimark/predict` |
+| Supported cell types | 300+ ENCODE and Roadmap reference cell lines |
+
+## When to use
+
+- Annotate regulatory elements in a locus without running assays.
+- Compare predicted epigenomic state across cell types.
+- Prioritize non-coding variants by predicted regulatory impact.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/epimark/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "region": "chr11:5225000-5250000",
+    "cell_type": "K562",
+    "marks": ["H3K27ac", "H3K4me3", "ATAC", "CpG_methyl"]
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/epimark/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={
+        "region": "chr11:5225000-5250000",
+        "cell_type": "K562",
+        "marks": ["H3K27ac", "H3K4me3", "ATAC", "CpG_methyl"],
+    },
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "H3K27ac": {"state": "active_enhancer", "peaks": 3, "p_value": 1e-8},
+  "H3K4me3": {"state": "active_promoter"},
+  "ATAC": {"state": "open_chromatin"},
+  "CpG_methyl": {"level": 0.12, "state": "hypomethylated"},
+  "overall_state": "active_regulatory"
+}
+```
+
+## Parameters
+
+<ParamField path="region" type="string" required>
+  Genomic region in `chrN:start-end` format. Maximum window 100 kb.
+</ParamField>
+
+<ParamField path="cell_type" type="string" required>
+  ENCODE or Roadmap cell type identifier (for example, `K562`, `GM12878`).
+</ParamField>
+
+<ParamField path="marks" type="string[]">
+  Marks to predict. Defaults to a standard panel. Valid values include `H3K27ac`, `H3K4me3`, `H3K4me1`, `H3K27me3`, `ATAC`, `DNase`, `CpG_methyl`.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="H3K27ac" type="object">
+  Prediction for the H3K27ac mark with `state`, `peaks`, and `p_value` fields.
+</ResponseField>
+
+<ResponseField name="ATAC" type="object">
+  Chromatin accessibility prediction. `state` is one of `open_chromatin` or `closed_chromatin`.
+</ResponseField>
+
+<ResponseField name="CpG_methyl" type="object">
+  CpG methylation prediction with a fractional `level` and categorical `state`.
+</ResponseField>
+
+<ResponseField name="overall_state" type="string">
+  Aggregated regulatory state for the region: `active_regulatory`, `poised`, `repressed`, or `quiescent`.
+</ResponseField>

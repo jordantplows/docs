@@ -1,0 +1,113 @@
+---
+title: "Run Inference Against a Deployed Bunker Model"
+sidebarTitle: "Run Inference"
+description: "Send prediction requests to a deployed Bunker model instance. Covers the predict endpoint, request shape, streaming responses, and per-model input schemas."
+---
+
+Once a Bunker model is deployed and reports `ready`, you send prediction requests to the predict endpoint. The request shape is uniform across models; the payload inside each request follows the input schema documented on each model's page.
+
+## Predict
+
+```http
+POST /v1/models/{model}/predict
+```
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/bunkerfold-3/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALER"}'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/bunkerfold-3/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={"sequence": "MVLSPADKTNVKAAWGKVGAHAGEYGAEALER"},
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+## Request shape
+
+The request body is model-specific. See the per-model pages for input fields:
+
+- [BunkerFold-3](/models/bunkerfold-3)
+- [GenoScan-LLM](/models/genoscan-llm)
+- [MolGen-7](/models/molgen-7)
+- [CryoNet](/models/cryonet)
+- [ToxPredict-v2](/models/toxpredict-v2)
+- [EpiMark](/models/epimark)
+
+All models accept an optional `request_id` string that is echoed back in the response for tracing.
+
+## Response shape
+
+Every response includes at minimum a top-level result object plus timing metadata:
+
+```json
+{
+  "request_id": "req_9e12ab",
+  "model": "bunkerfold-3",
+  "time_seconds": 1.8,
+  "result": {
+    "confidence": 0.97,
+    "structure_url": "https://cdn.bunkerbio.com/predictions/abc123.pdb"
+  }
+}
+```
+
+<ResponseField name="request_id" type="string">
+  Echo of the client-supplied `request_id`, or a server-assigned one when not provided.
+</ResponseField>
+
+<ResponseField name="time_seconds" type="number">
+  Wall-clock time to produce the prediction, from receipt to response.
+</ResponseField>
+
+<ResponseField name="result" type="object">
+  Model-specific result. See each model's page for its response fields.
+</ResponseField>
+
+## Async predictions
+
+For long-running jobs (for example, [CryoNet](/models/cryonet) reconstructions), pass `mode: "async"` to receive a job ID immediately and poll for completion:
+
+```json Request
+{
+  "mode": "async",
+  "particles": 12400,
+  "input_url": "s3://my-bucket/particles.star"
+}
+```
+
+```json Response
+{
+  "job_id": "job_5c81f0",
+  "status": "queued",
+  "poll_url": "https://api.bunkerbio.com/v1/jobs/job_5c81f0"
+}
+```
+
+Poll `poll_url` until `status` is `completed`, then read the `result` field.
+
+## Batching
+
+Send an array of items in a `batch` field to run multiple predictions in a single request. Batches share GPU memory and are typically faster than sequential calls.
+
+```json
+{
+  "batch": [
+    {"sequence": "MVLSPADK..."},
+    {"sequence": "GVEQMTGIN..."}
+  ]
+}
+```
+
+The response contains a `batch` array in the same order as the request.

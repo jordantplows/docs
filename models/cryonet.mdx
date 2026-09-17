@@ -1,0 +1,115 @@
+---
+title: "CryoNet: Cryo-EM 3D Reconstruction Model"
+sidebarTitle: "CryoNet"
+description: "CryoNet reconstructs 3D density maps from single-particle cryo-EM micrographs at near-atomic resolution using 10x fewer particles than standard pipelines."
+---
+
+CryoNet is a 540M parameter cryo-EM reconstruction model. Given a set of single-particle micrographs, it produces a 3D density map at near-atomic resolution while using roughly 10x fewer particles than conventional pipelines.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Imaging |
+| Parameters | 540M |
+| Version | v1.4 |
+| Endpoint | `POST /v1/models/cryonet/predict` |
+| Output | 3D density map plus FSC and symmetry report |
+
+## When to use
+
+- Reconstruct a 3D map from a small particle set.
+- Get a fast preliminary map during a data collection session.
+- Resolve symmetry ambiguities before running a full refinement.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/cryonet/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "particles": 12400,
+    "pixel_size": 1.06,
+    "voltage": 300,
+    "defocus_range": [1.2, 3.0],
+    "input_url": "s3://my-bucket/particles.star"
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/cryonet/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={
+        "particles": 12400,
+        "pixel_size": 1.06,
+        "voltage": 300,
+        "defocus_range": [1.2, 3.0],
+        "input_url": "s3://my-bucket/particles.star",
+    },
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "resolution_angstrom": 2.8,
+  "fsc_threshold": 0.143,
+  "symmetry": "C1",
+  "map_size": [256, 256, 256],
+  "processing_minutes": 14,
+  "particles_used": 11820,
+  "map_url": "https://cdn.bunkerbio.com/maps/xyz789.mrc"
+}
+```
+
+## Parameters
+
+<ParamField path="input_url" type="string" required>
+  Signed URL or S3 path to a particle STAR file or a directory of micrographs.
+</ParamField>
+
+<ParamField path="particles" type="integer" required>
+  Number of particles in the input set.
+</ParamField>
+
+<ParamField path="pixel_size" type="number" required>
+  Pixel size in angstroms.
+</ParamField>
+
+<ParamField path="voltage" type="integer">
+  Accelerating voltage in kV. Typical values are `200` or `300`.
+</ParamField>
+
+<ParamField path="defocus_range" type="number[]">
+  Two-element array `[min, max]` in micrometers.
+</ParamField>
+
+<ParamField path="symmetry" type="string">
+  Optional symmetry hint (`C1`, `C2`, `D2`, `I`, etc.). Defaults to automatic detection.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="resolution_angstrom" type="number">
+  Reconstructed resolution in angstroms at the reported FSC threshold.
+</ResponseField>
+
+<ResponseField name="symmetry" type="string">
+  Detected or applied symmetry group.
+</ResponseField>
+
+<ResponseField name="particles_used" type="integer">
+  Number of particles that contributed to the final map after outlier rejection.
+</ResponseField>
+
+<ResponseField name="map_url" type="string">
+  Signed URL to the reconstructed density map in MRC format. Valid for 24 hours.
+</ResponseField>

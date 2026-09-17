@@ -1,0 +1,56 @@
+---
+title: "Bunker Model Catalog: Compare All Six Models"
+sidebarTitle: "Overview"
+description: "Compare every Bunker AI model at a glance: category, parameters, version, and typical use case. Pick the right model for protein, genomics, drug, or imaging work."
+---
+
+The Bunker catalog covers four life-science domains: protein structure, genomics, drug discovery, and imaging. Every model is served through the same API surface, so switching between them is a matter of changing the model name.
+
+## All models
+
+| Model | Category | Parameters | Version | Typical use |
+| --- | --- | --- | --- | --- |
+| [BunkerFold-3](/models/bunkerfold-3) | Protein | 1.2B | v3.1 | Predict 3D structure from an amino acid sequence |
+| [GenoScan-LLM](/models/genoscan-llm) | Genomics | 800M | v2.0 | Whole-genome variant calling with clinical-grade sensitivity |
+| [MolGen-7](/models/molgen-7) | Drug Discovery | 3.4B | v7.0 | Generate small molecules optimized for a target |
+| [CryoNet](/models/cryonet) | Imaging | 540M | v1.4 | Reconstruct 3D density maps from cryo-EM micrographs |
+| [ToxPredict-v2](/models/toxpredict-v2) | Drug Discovery | 280M | v2.3 | Screen compounds for hepatotoxicity, cardiotoxicity, and mutagenicity |
+| [EpiMark](/models/epimark) | Genomics | 420M | v1.1 | Predict histone marks, methylation, and chromatin accessibility |
+
+## Pick by task
+
+<CardGroup cols={2}>
+  <Card title="Predict a protein structure" icon="dna" href="/models/bunkerfold-3">
+    Use BunkerFold-3 for sub-angstrom structure prediction with full side chains.
+  </Card>
+
+  <Card title="Call variants from a genome" icon="chart-line" href="/models/genoscan-llm">
+    Use GenoScan-LLM to flag pathogenic variants from BAM, CRAM, or VCF inputs.
+  </Card>
+
+  <Card title="Design a small molecule" icon="flask" href="/models/molgen-7">
+    Use MolGen-7 to generate candidates against a specific target with ADMET constraints.
+  </Card>
+
+  <Card title="Reconstruct a cryo-EM map" icon="microscope" href="/models/cryonet">
+    Use CryoNet to resolve 3D density maps with 10x fewer particles than standard pipelines.
+  </Card>
+
+  <Card title="Screen for toxicity" icon="shield" href="/models/toxpredict-v2">
+    Use ToxPredict-v2 to filter compound libraries before synthesis.
+  </Card>
+
+  <Card title="Annotate the epigenome" icon="layer-group" href="/models/epimark">
+    Use EpiMark to predict histone marks and methylation from sequence context alone.
+  </Card>
+</CardGroup>
+
+## Shared API surface
+
+Every model uses the same three endpoints:
+
+- `POST /v1/models/{model}/deploy` starts an inference instance.
+- `POST /v1/models/{model}/predict` runs a prediction against a deployed instance.
+- `GET /v1/models/{model}/status` reports deployment health and queue depth.
+
+See the [API Reference](/api-reference/introduction) for full request and response schemas.

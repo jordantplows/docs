@@ -1,0 +1,77 @@
+---
+title: "Authentication: API Keys for Bunker Models"
+sidebarTitle: "Authentication"
+description: "Generate a Bunker API key, pass it as a bearer token on every request, and rotate it safely. Covers scopes, headers, and common auth errors."
+---
+
+Bunker authenticates every API call with a bearer token. You get one from your Bunker account and pass it in the `Authorization` header of each request.
+
+## Get an API key
+
+<Steps>
+  <Step title="Open account settings">
+    Sign in at [bunkerbio.com](https://bunkerbio.com) and open the API keys section of your account settings.
+  </Step>
+  <Step title="Create a new key">
+    Give the key a descriptive name (for example, `prod-genoscan`) so you can identify it later. Keys are shown once at creation; copy the value immediately.
+  </Step>
+  <Step title="Store the key securely">
+    Save the key in a secret manager or an environment variable. Never commit it to source control.
+
+    ```bash
+    export BUNKER_API_KEY="sk_live_..."
+    ```
+  </Step>
+</Steps>
+
+## Authenticate a request
+
+Pass your key as a bearer token on every request:
+
+```bash
+curl https://api.bunkerbio.com/v1/models \
+  -H "Authorization: Bearer $BUNKER_API_KEY"
+```
+
+<Note>
+  All Bunker endpoints require authentication. Unauthenticated requests return `401 Unauthorized`.
+</Note>
+
+## Scopes
+
+Each key carries a scope that limits what it can do:
+
+| Scope | Allows |
+| --- | --- |
+| `read` | List models, view deployment status, fetch prediction results |
+| `inference` | Everything in `read` plus running predictions on deployed models |
+| `deploy` | Everything in `inference` plus deploying and stopping model instances |
+| `admin` | Full account access, including billing and key management |
+
+Give production workloads the narrowest scope they need.
+
+## Rotate a key
+
+<Warning>
+  Rotating a key immediately invalidates the old value. Deploy the new key to every environment before revoking the old one.
+</Warning>
+
+<Steps>
+  <Step title="Create a replacement key">
+    Generate a new key with the same scope.
+  </Step>
+  <Step title="Roll out the new key">
+    Update your secrets in every environment that uses the old key.
+  </Step>
+  <Step title="Revoke the old key">
+    Delete the old key from account settings. Any request still using it will fail with `401`.
+  </Step>
+</Steps>
+
+## Common auth errors
+
+| Status | Meaning | Fix |
+| --- | --- | --- |
+| `401 Unauthorized` | Missing or invalid key | Check the `Authorization` header and confirm the key is active |
+| `403 Forbidden` | Key lacks the required scope | Use a key with `inference` or higher for prediction endpoints |
+| `429 Too Many Requests` | Rate limit exceeded | Back off and retry with exponential jitter |

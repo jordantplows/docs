@@ -1,0 +1,106 @@
+---
+title: "ToxPredict-v2: Multi-Endpoint Toxicity Prediction"
+sidebarTitle: "ToxPredict-v2"
+description: "ToxPredict-v2 screens small molecules for hepatotoxicity, cardiotoxicity, and mutagenicity before synthesis, returning per-endpoint scores and an overall verdict."
+---
+
+ToxPredict-v2 is a 280M parameter model for multi-endpoint toxicity prediction. Given a SMILES string, it returns per-endpoint risk scores across hepatotoxicity, cardiotoxicity, mutagenicity, and acute toxicity, with an overall verdict.
+
+## At a glance
+
+| Field | Value |
+| --- | --- |
+| Category | Drug Discovery |
+| Parameters | 280M |
+| Version | v2.3 |
+| Endpoint | `POST /v1/models/toxpredict-v2/predict` |
+| Typical latency | Under 500 ms per compound |
+
+## When to use
+
+- Screen a compound library before wet-lab assays.
+- Filter [MolGen-7](/models/molgen-7) candidates before synthesis.
+- Prioritize a hit series by predicted safety profile.
+
+## Example
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST https://api.bunkerbio.com/v1/models/toxpredict-v2/predict \
+  -H "Authorization: Bearer $BUNKER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "smiles": "CC(=O)NC1=CC=C(O)C=C1",
+    "name": "Acetaminophen",
+    "endpoints": ["hERG", "DILI", "AMES", "LD50"]
+  }'
+```
+
+```python Python
+import requests, os
+
+r = requests.post(
+    "https://api.bunkerbio.com/v1/models/toxpredict-v2/predict",
+    headers={"Authorization": f"Bearer {os.environ['BUNKER_API_KEY']}"},
+    json={
+        "smiles": "CC(=O)NC1=CC=C(O)C=C1",
+        "name": "Acetaminophen",
+        "endpoints": ["hERG", "DILI", "AMES", "LD50"],
+    },
+)
+print(r.json())
+```
+
+</CodeGroup>
+
+```json Response
+{
+  "hERG_block": {"score": 0.03, "risk": "low"},
+  "DILI_risk": {"score": 0.61, "risk": "moderate"},
+  "AMES_mutagen": {"result": "negative"},
+  "LD50_oral_mg_per_kg": 2400,
+  "overall": "CAUTION",
+  "flags": ["hepatotoxicity"]
+}
+```
+
+## Parameters
+
+<ParamField path="smiles" type="string" required>
+  SMILES representation of the compound.
+</ParamField>
+
+<ParamField path="name" type="string">
+  Optional human-readable name for the compound. Echoed in the response.
+</ParamField>
+
+<ParamField path="endpoints" type="string[]">
+  Endpoints to evaluate. Defaults to all supported endpoints. Valid values: `hERG`, `DILI`, `AMES`, `LD50`, `cardiotox`, `nephrotox`.
+</ParamField>
+
+## Response fields
+
+<ResponseField name="hERG_block" type="object">
+  Cardiotoxicity risk from hERG channel binding. Contains a `score` between 0 and 1 and a categorical `risk` (`low`, `moderate`, `high`).
+</ResponseField>
+
+<ResponseField name="DILI_risk" type="object">
+  Drug-induced liver injury risk with `score` and `risk` fields.
+</ResponseField>
+
+<ResponseField name="AMES_mutagen" type="object">
+  Bacterial mutagenicity result (`positive` or `negative`).
+</ResponseField>
+
+<ResponseField name="LD50_oral_mg_per_kg" type="number">
+  Predicted oral LD50 in milligrams per kilogram.
+</ResponseField>
+
+<ResponseField name="overall" type="string">
+  Overall verdict: `CLEAR`, `CAUTION`, or `AVOID`.
+</ResponseField>
+
+<ResponseField name="flags" type="string[]">
+  Human-readable flags for individual concerns raised across endpoints.
+</ResponseField>
