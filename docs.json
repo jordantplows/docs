@@ -5,7 +5,7 @@
   "colors": {
     "primary": "#2D5A27",
     "light": "#4C8F42",
-    "dark": "#1F3F1B"
+    "dark": "#2D5A27"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -56,5 +56,23 @@
     "socials": {
       "github": "https://github.com/jordantplows"
     }
+  },
+  "background": {
+    "color": {
+      "light": "#FAFAFA",
+      "dark": "#111111"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Inter Tight",
+      "weight": 900
+    },
+    "body": {
+      "family": "Newsreader"
+    }
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs"
   }
 }
