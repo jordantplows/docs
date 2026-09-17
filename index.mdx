@@ -1,49 +1,61 @@
 ---
 title: "Bunker Longevity: Frontier AI Models for Life Sciences"
 sidebarTitle: "Introduction"
-description: "Bunker Longevity builds AI models for drug discovery, protein folding, genomics, and imaging. Each model ships with an API, docs, and runnable examples."
+description: "Bunker Longevity builds foundation models for drug discovery, protein folding, genomics, and imaging. Hosted API, typed Python SDK, runnable examples."
 ---
 
-Bunker Longevity builds foundation models for the life sciences. Each model is available through a hosted API with runnable examples, deployment recipes, and reference documentation. Use these docs to pick the right model, integrate it into your pipeline, and ship results.
+Bunker Longevity builds foundation models for the life sciences. Every model ships behind a single hosted API and a typed Python SDK. Predict a protein structure, call variants, generate a molecule, or reconstruct a cryo-EM map with the same three calls: deploy, predict, status.
 
-<CardGroup cols={2}>
-  <Card title="Quickstart" icon="rocket" href="/quickstart">
-    Deploy your first Bunker model and run inference in under 5 minutes.
-  </Card>
+## Install
 
-  <Card title="Browse Models" icon="brain" href="/models/overview">
-    Compare BunkerFold-3, GenoScan-LLM, MolGen-7, CryoNet, and more.
-  </Card>
+```bash
+pip install bunker-fold
+```
 
-  <Card title="Authentication" icon="key" href="/authentication">
-    Create an API key and authenticate your requests.
-  </Card>
+## Predict
 
-  <Card title="API Reference" icon="code" href="/api-reference/introduction">
-    Deploy models, run inference, and handle errors.
-  </Card>
-</CardGroup>
+```python
+from bunker_fold import Bunker
 
-## Model families
+client = Bunker()
 
-<CardGroup cols={2}>
-  <Card title="Protein" icon="dna" href="/models/bunkerfold-3">
-    Structure prediction from sequence with side-chain resolution.
-  </Card>
+result = client.models.bunkerfold_3.predict(
+    sequence="MVLSPADKTNVKAAWGKVGAHAGEYGAEALERMFLSFPTTKTYFPHFDLSH"
+)
 
-  <Card title="Genomics" icon="chart-line" href="/models/genoscan-llm">
-    Variant calling and epigenomic annotation at clinical grade.
-  </Card>
+print(result.confidence)      # 0.97
+print(result.fold_class)      # 'globin'
+print(result.structure_url)   # https://cdn.bunkerbio.com/predictions/...pdb
+```
 
-  <Card title="Drug Discovery" icon="flask" href="/models/molgen-7">
-    Generative molecular design and multi-endpoint toxicity screening.
-  </Card>
+## Model catalog
 
-  <Card title="Imaging" icon="microscope" href="/models/cryonet">
-    Cryo-EM reconstruction at near-atomic resolution.
-  </Card>
-</CardGroup>
+| Model | Domain | Parameters | Endpoint |
+| --- | --- | --- | --- |
+| [BunkerFold-3](/models/bunkerfold-3) | Protein structure | 1.2B | `bunkerfold-3` |
+| [GenoScan-LLM](/models/genoscan-llm) | Variant calling | 800M | `genoscan-llm` |
+| [MolGen-7](/models/molgen-7) | Generative chemistry | 3.4B | `molgen-7` |
+| [CryoNet](/models/cryonet) | Cryo-EM reconstruction | 540M | `cryonet` |
+| [ToxPredict-v2](/models/toxpredict-v2) | Toxicity screening | 280M | `toxpredict-v2` |
+| [EpiMark](/models/epimark) | Epigenomic annotation | 420M | `epimark` |
 
-## Get help
+## Base URL
+
+```text
+https://api.bunkerbio.com/v1
+```
+
+All requests use HTTPS bearer token auth. See [Authentication](/authentication) to create a key.
+
+## Endpoints
+
+```http
+POST  /v1/models/{model}/deploy    # start an inference instance
+POST  /v1/models/{model}/predict   # run a prediction
+GET   /v1/models/{model}/status    # health and queue depth
+POST  /v1/models/{model}/stop      # release resources
+```
+
+## Contact
 
 Reach the team at [hello@bunkerbio.com](mailto:hello@bunkerbio.com).
